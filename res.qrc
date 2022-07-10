@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/load.png</file>
+        <file>icons/menu.png</file>
+        <file>icons/save.png</file>
+        <file>icons/quit.png</file>
+        <file>icons/addWorkspace.png</file>
+        <file>icons/removeWorkspace.png</file>
+        <file>icons/refresh.svg</file>
+        <file>icons/forward.svg</file>
+        <file>icons/back.svg</file>
+        <file>icons/add.svg</file>
+        <file>icons/close.svg</file>
+        <file>icons/tab.png</file>
+        <file>icons/center.png</file>
+        <file>icons/top.png</file>
+        <file>icons/right.png</file>
+        <file>icons/left.png</file>
+        <file>icons/bottom.png</file>
+        <file>icons/about.png</file>
+        <file>icons/splitbrowser.png</file>
+        <file>icons/homepage.png</file>
+        <file>icons/search.png</file>
+        <file>icons/settings.png</file>
+        <file>icons/remove.png</file>
+    </qresource>
+</RCC>

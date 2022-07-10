@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>750</height>
+   </rect>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="res.qrc">
+    <normaloff>:/icons/splitbrowser.png</normaloff>:/icons/splitbrowser.png</iconset>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>24</width>
+    <height>24</height>
+   </size>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menu_Area">
+     <property name="title">
+      <string>Tab &amp;area</string>
+     </property>
+     <property name="icon">
+      <iconset resource="res.qrc">
+       <normaloff>:/icons/tab.png</normaloff>:/icons/tab.png</iconset>
+     </property>
+     <addaction name="actionRight"/>
+     <addaction name="actionLeft"/>
+     <addaction name="actionTop"/>
+     <addaction name="actionBottom"/>
+     <addaction name="actionCenter"/>
+    </widget>
+    <widget class="QMenu" name="menuWorkspaces">
+     <property name="title">
+      <string>Workspaces</string>
+     </property>
+    </widget>
+    <addaction name="actionAdd"/>
+    <addaction name="menu_Area"/>
+    <addaction name="separator"/>
+    <addaction name="menuWorkspaces"/>
+    <addaction name="actionAddWorkspace"/>
+    <addaction name="actionRemoveWorkspace"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actionMenubar"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menu_Tools">
+    <property name="title">
+     <string>&amp;Settings</string>
+    </property>
+    <addaction name="actionHomepage"/>
+    <addaction name="actionSearchpage"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionClear"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_View"/>
+   <addaction name="menu_Tools"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/quit.png</normaloff>:/icons/quit.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionAdd">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/add.svg</normaloff>:/icons/add.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add new &amp;tab</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionAddWorkspace">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/addWorkspace.png</normaloff>:/icons/addWorkspace.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add new workspace</string>
+   </property>
+  </action>
+  <action name="actionRemoveWorkspace">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/removeWorkspace.png</normaloff>:/icons/removeWorkspace.png</iconset>
+   </property>
+   <property name="text">
+    <string>Remove workspace</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/about.png</normaloff>:/icons/about.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+   <property name="toolTip">
+    <string>About browser</string>
+   </property>
+  </action>
+  <action name="actionHomepage">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/homepage.png</normaloff>:/icons/homepage.png</iconset>
+   </property>
+   <property name="text">
+    <string>Set &amp;home page...</string>
+   </property>
+   <property name="toolTip">
+    <string>Set home page</string>
+   </property>
+  </action>
+  <action name="actionSearchpage">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/search.png</normaloff>:/icons/search.png</iconset>
+   </property>
+   <property name="text">
+    <string>Set &amp;search page...</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save &amp;layout on close</string>
+   </property>
+   <property name="toolTip">
+    <string>Save layout on close</string>
+   </property>
+  </action>
+  <action name="actionMenubar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Menu bar </string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/remove.png</normaloff>:/icons/remove.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Clear browsing data on close</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear browsing data</string>
+   </property>
+  </action>
+  <actiongroup name="tabAreas">
+   <action name="actionRight">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="icon">
+     <iconset resource="res.qrc">
+      <normaloff>:/icons/right.png</normaloff>:/icons/right.png</iconset>
+    </property>
+    <property name="text">
+     <string>&amp;Right</string>
+    </property>
+    <property name="toolTip">
+     <string>Right area</string>
+    </property>
+   </action>
+   <action name="actionLeft">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="icon">
+     <iconset resource="res.qrc">
+      <normaloff>:/icons/left.png</normaloff>:/icons/left.png</iconset>
+    </property>
+    <property name="text">
+     <string>&amp;Left</string>
+    </property>
+    <property name="toolTip">
+     <string>Left area</string>
+    </property>
+   </action>
+   <action name="actionTop">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="icon">
+     <iconset resource="res.qrc">
+      <normaloff>:/icons/top.png</normaloff>:/icons/top.png</iconset>
+    </property>
+    <property name="text">
+     <string>&amp;Top</string>
+    </property>
+    <property name="toolTip">
+     <string>Top area</string>
+    </property>
+   </action>
+   <action name="actionBottom">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="icon">
+     <iconset resource="res.qrc">
+      <normaloff>:/icons/bottom.png</normaloff>:/icons/bottom.png</iconset>
+    </property>
+    <property name="text">
+     <string>&amp;Bottom</string>
+    </property>
+    <property name="toolTip">
+     <string>Bottom area</string>
+    </property>
+   </action>
+   <action name="actionCenter">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="icon">
+     <iconset resource="res.qrc">
+      <normaloff>:/icons/center.png</normaloff>:/icons/center.png</iconset>
+    </property>
+    <property name="text">
+     <string>&amp;Center</string>
+    </property>
+    <property name="toolTip">
+     <string>Center area</string>
+    </property>
+   </action>
+  </actiongroup>
+  <actiongroup name="workspaces"/>
+ </widget>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections/>
+</ui>
