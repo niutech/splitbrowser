@@ -5,13 +5,17 @@ Split Browser is a minimalistic, ultra-lightweight, open source web browser for 
 
 ![Split Browser](https://i.ibb.co/rcXz8Yd/Split-Browser.webp)
 
-Every variant of Split Browser (WebKit, Ultralight, native webview) uses <100 MB of RAM to show the home page, which is much less than Chrome/Firefox/Edge. It also allows you to tile web pages side-by-side by dragging and dropping tabs.
+Every variant of Split Browser (WebKit, Ultralight, native webview) uses <100 MB of RAM to show the home page, which is much less than Chrome/Firefox/Vivaldi/Opera/Edge. It also allows you to show web pages side-by-side as tiles by dragging and dropping tabs.
 
-Split Browser is in the alpha stage and provides only basic web browsing features, but no bookmarks, no history, no extensions, no advanced settings.
+See the RAM usage of all 3 variants showing the DuckDuckGo home page:
+
+![Split Browser RAM usage](https://i.imgur.com/LbHUr1N.png)
+
+Split Browser is in the alpha stage and for now it provides only basic web browsing features - no bookmarks, no history, no extensions, no adblock, no advanced settings.
 
 ## Download
 
-You can download the latest binary for Windows in the [releases](https://github.com/niutech/splitbrowser/releases). Keep in mind, this is an alpha version, so use at your own risk!
+You can download the latest binary for Windows 10+ in the [releases](https://github.com/niutech/splitbrowser/releases). Keep in mind, this is an alpha version, so use at your own risk!
 
 ## Build
 
