@@ -30,11 +30,11 @@
      <height>26</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <widget class="QMenu" name="menu_Area">
+    <widget class="QMenu" name="menuArea">
      <property name="title">
       <string>Tab &amp;area</string>
      </property>
@@ -54,7 +54,7 @@
      </property>
     </widget>
     <addaction name="actionAdd"/>
-    <addaction name="menu_Area"/>
+    <addaction name="menuArea"/>
     <addaction name="separator"/>
     <addaction name="menuWorkspaces"/>
     <addaction name="actionAddWorkspace"/>
@@ -62,19 +62,22 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menu_View">
+   <widget class="QMenu" name="menuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
     <addaction name="actionMenubar"/>
+    <addaction name="actionBookmarksbar"/>
+    <addaction name="separator"/>
+    <addaction name="actionFullscreen"/>
    </widget>
-   <widget class="QMenu" name="menu_Help">
+   <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>&amp;Help</string>
+     <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
-   <widget class="QMenu" name="menu_Tools">
+   <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>&amp;Settings</string>
     </property>
@@ -83,10 +86,10 @@
     <addaction name="actionSave"/>
     <addaction name="actionClear"/>
    </widget>
-   <addaction name="menu_File"/>
-   <addaction name="menu_View"/>
-   <addaction name="menu_Tools"/>
-   <addaction name="menu_Help"/>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionQuit">
    <property name="icon">
@@ -189,7 +192,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Menu bar </string>
+    <string>&amp;Menu bar</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
@@ -208,6 +211,28 @@
    </property>
    <property name="toolTip">
     <string>Clear browsing data</string>
+   </property>
+  </action>
+  <action name="actionBookmarksbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Bookmarks bar</string>
+   </property>
+  </action>
+  <action name="actionFullscreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Full screen</string>
+   </property>
+   <property name="toolTip">
+    <string>Full screen</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
   <actiongroup name="tabAreas">

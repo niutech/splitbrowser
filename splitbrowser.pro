@@ -1,12 +1,10 @@
 DEVELOPER_NAME='Jerzy Glowacki'
 APP_NAME='Split Browser'
-APP_VERSION=0.1
+APP_VERSION=0.2
 WEBKIT_VERSION = 1668
-WEB_ENGINE = native # webkit/native/ultralight
+WEB_ENGINE = webkit # webkit/native/ultralight
 
-QT += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core gui widgets
 
 CONFIG += c++17
 
@@ -28,22 +26,39 @@ else: DEFINES += USE_WEBKIT=0 USE_ULTRALIGHT=0
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    autosaver.cpp \
+    bookmarks.cpp \
+    edittreeview.cpp \
+    history.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    modelmenu.cpp \
+    searchlineedit.cpp \
+    xbel.cpp
 
 equals(WEB_ENGINE, 'webkit'): SOURCES += qwebkitwebview.cpp
 else: equals(WEB_ENGINE, 'ultralight'): SOURCES += qultralightwebview.cpp
 else: SOURCES += qnativewebview.cpp
 
 HEADERS += \
+    autosaver.h \
+    bookmarks.h \
+    edittreeview.h \
+    history.h \
     iqwebview.h \
-    mainwindow.h
+    mainwindow.h \
+    modelmenu.h \
+    searchlineedit.h \
+    xbel.h
 
 equals(WEB_ENGINE, 'webkit'): HEADERS += qwebkitwebview.h
 else: equals(WEB_ENGINE, 'ultralight'): HEADERS += qultralightwebview.h
 else: HEADERS += qnativewebview.h webview.h webview2.h
 
 FORMS += \
+    addbookmarkdialog.ui \
+    bookmarks.ui \
+    history.ui \
     mainwindow.ui
 
 CONFIG(debug, debug|release):win32: LIBS += -L$$PWD/./ -lqtadvanceddockingd

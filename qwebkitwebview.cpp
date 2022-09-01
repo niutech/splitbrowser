@@ -66,3 +66,8 @@ QString QWebKitWebView::title() const
 {
     return _title;
 }
+
+void QWebKitWebView::load(const QUrl &url)
+{
+    //TODO
+}

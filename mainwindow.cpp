@@ -1,12 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#if USE_WEBKIT
-#include "qwebkitwebview.h"
-#elif USE_ULTRALIGHT
-#include "qultralightwebview.h"
-#else
-#include "qnativewebview.h"
-#endif
 #include "DockAreaWidget.h"
 #include "DockAreaTitleBar.h"
 #include "DockAreaTabBar.h"
@@ -28,9 +21,12 @@
 
 using namespace std;
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+HistoryManager *MainWindow::_historyManager = 0;
+BookmarksManager *MainWindow::_bookmarksManager = 0;
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainWindow), _autoSaver(new AutoSaver(this))
 {
-    ui->setupUi(this);
+    _ui->setupUi(this);
 
 #if USE_ULTRALIGHT
     ultralight::Settings settings;
@@ -39,41 +35,116 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ultralight::Config config;
 //    config.memory_cache_size = 128 * 1024 * 1024;
 //    config.page_cache_size = 2;
-    ulApp = ultralight::App::Create(settings, config);
+    _ulApp = ultralight::App::Create(settings, config);
 #endif
 
     // Dock
     ads::CDockManager::setConfigFlag(ads::CDockManager::AllTabsHaveCloseButton);
     ads::CDockManager::setConfigFlag(ads::CDockManager::EqualSplitOnInsertion);
     //ads::CDockManager::setConfigFlag(ads::CDockManager::FocusHighlighting);
-    dm = new ads::CDockManager(this);
-    connect(dm, &ads::CDockManager::dockAreaCreated, [=](ads::CDockAreaWidget *da) {
+    _dm = new ads::CDockManager(this);
+    connect(_dm, &ads::CDockManager::dockAreaCreated, [=](ads::CDockAreaWidget *da) {
         ads::CDockAreaTitleBar *titleBar = da->titleBar();
         QToolButton *addPaneButton = new QToolButton;
-        addPaneButton->setDefaultAction(ui->actionAdd);
+        addPaneButton->setDefaultAction(_ui->actionAdd);
         addPaneButton->setAutoRaise(true);
         titleBar->insertWidget(titleBar->indexOf(titleBar->tabBar()) + 1, addPaneButton);
+    });
+
+
+    // History
+    historyManager();
+    HistoryMenu *historyMenu = new HistoryMenu(this);
+    connect(historyMenu, &HistoryMenu::openUrl, [=](QUrl url) {
+        if (currentWebView()) currentWebView()->load(url);
+        else addPane(QUrl(url));
+    });
+    historyMenu->setObjectName("historyMenu");
+    historyMenu->setTitle(tr("Hi&story"));
+    menuBar()->insertMenu(_ui->menuSettings->menuAction(), historyMenu);
+
+//    QList<QAction*> historyActions;
+//    historyActions.append(m_tabWidget->recentlyClosedTabsAction());
+//    historyMenu->setInitialActions(historyActions);
+
+    // Bookmarks
+    BookmarksMenu *bookmarksMenu = new BookmarksMenu(this);
+    connect(bookmarksMenu, &BookmarksMenu::openUrl, [=](QUrl url) {
+        if (currentWebView()) currentWebView()->load(url);
+        else addPane(QUrl(url));
+    });
+    bookmarksMenu->setObjectName("bookmarksMenu");
+    bookmarksMenu->setTitle(tr("&Bookmarks"));
+    menuBar()->insertMenu(_ui->menuSettings->menuAction(), bookmarksMenu);
+
+    QAction *showAllBookmarksAction = new QAction(tr("Show All Bookmarks"), this);
+    connect(showAllBookmarksAction, SIGNAL(triggered()), this, SLOT(onShowBookmarksDialog()));
+
+    QAction *addBookmark = new QAction(tr("Add Bookmark..."), this);
+    connect(addBookmark, SIGNAL(triggered()), this, SLOT(onAddBookmark()));
+    addBookmark->setShortcut(QKeySequence("Ctrl+D"));
+
+    QAction *importBookmarks = new QAction(tr("&Import Bookmarks..."), this);
+    connect(importBookmarks, SIGNAL(triggered()), bookmarksManager(), SLOT(importBookmarks()));
+
+    QAction *exportBookmarks = new QAction(tr("&Export Bookmarks..."), this);
+    connect(exportBookmarks, SIGNAL(triggered()), bookmarksManager(), SLOT(exportBookmarks()));
+
+    QList<QAction*> bookmarksActions;
+    bookmarksActions.append(showAllBookmarksAction);
+    bookmarksActions.append(addBookmark);
+    bookmarksActions.append(importBookmarks);
+    bookmarksActions.append(exportBookmarks);
+    bookmarksMenu->setInitialActions(bookmarksActions);
+
+    BookmarksModel *boomarksModel = bookmarksManager()->bookmarksModel();
+    _bookmarksToolbar = new BookmarksToolBar(boomarksModel, this);
+    connect(_bookmarksToolbar, &BookmarksToolBar::openUrl, [=](QUrl url) {
+        if (currentWebView()) currentWebView()->load(url);
+        else addPane(QUrl(url));
+    });
+    connect(_bookmarksToolbar->toggleViewAction(), SIGNAL(toggled(bool)),
+            this, SLOT(on_actionBookmarksbar_toggled(bool)));
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setSpacing(0);
+    layout->setMargin(0);
+#if defined(Q_OS_OSX)
+    layout->addWidget(_bookmarksToolbar);
+    layout->addWidget(new QWidget); // OS X tab widget style bug
+#else
+    addToolBarBreak();
+    addToolBar(_bookmarksToolbar);
+#endif
+
+    // Context menu
+    _dm->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(_dm, &ads::CDockManager::customContextMenuRequested, [=](const QPoint &pos) {
+        QMenu *menu = new QMenu(this);
+        menu->addAction(_ui->actionMenubar);
+        menu->addAction(_ui->actionBookmarksbar);
+        menu->addAction(_ui->actionAdd);
+        menu->exec(mapToGlobal(pos));
     });
 
     restoreSettings();
     restoreWorkspaces();
 
-    if (!dm->openedDockWidgets().size())
-        addPane(homePage);
+    if (!_dm->openedDockWidgets().size())
+        addPane(_homePage);
 
-    dm->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(dm, &ads::CDockManager::customContextMenuRequested, [=](const QPoint &pos) {
-        QMenu *menu = new QMenu(this);
-        menu->addAction(ui->actionMenubar);
-        menu->addAction(ui->actionAdd);
-        menu->exec(mapToGlobal(pos));
-    });
+//    for (ads::CDockWidget *dw : _dm->dockWidgetsMap())
+//	{
+//		_this->connect(dw, SIGNAL(viewToggled(bool)), SLOT(onViewToggled(bool)));
+//		_this->connect(dw, SIGNAL(visibilityChanged(bool)), SLOT(onViewVisibilityChanged(bool)));
+//	}
 }
 
 MainWindow::~MainWindow()
 {
-    delete dm;
-    delete ui;
+    _autoSaver->changeOccurred();
+    _autoSaver->saveIfNeccessary();
+    delete _dm;
+    delete _ui;
     if (clearDataOnClose)
         clearData();
 }
@@ -95,9 +166,25 @@ QUrl MainWindow::sanitizeUrl(const QUrl &url)
             url.toString().endsWith(".io")) {
             return QUrl("http://" + url.toEncoded());
         }
-        return QUrl(searchPage.toString().replace("[query]", url.toEncoded()));
+        return QUrl(_searchPage.toString().replace("[query]", url.toEncoded()));
     }
     return url;
+}
+
+HistoryManager *MainWindow::historyManager()
+{
+    if (!_historyManager) {
+        _historyManager = new HistoryManager();
+    }
+    return _historyManager;
+}
+
+BookmarksManager *MainWindow::bookmarksManager()
+{
+    if (!_bookmarksManager) {
+        _bookmarksManager = new BookmarksManager();
+    }
+    return _bookmarksManager;
 }
 
 QSize MainWindow::sizeHint() const
@@ -105,56 +192,71 @@ QSize MainWindow::sizeHint() const
     return QDesktopWidget().availableGeometry(this).size() * 0.9;
 }
 
+WEBVIEW_IMPL *MainWindow::currentWebView() const
+{
+    if (_dm->dockArea(0) && _dm->dockArea(0)->currentDockWidget())
+        return (WEBVIEW_IMPL*) _dm->dockArea(0)->currentDockWidget()->widget();
+    return nullptr;
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     saveSettings();
 #if USE_ULTRALIGHT
-    ulApp->Quit();
+    _ulApp->Quit();
 #endif
     QMainWindow::closeEvent(event);
 }
 
 void MainWindow::addPane(QUrl url)
 {
-    ads::CDockWidget* dw = new ads::CDockWidget("Loading...");
+    ads::CDockWidget* dw = new ads::CDockWidget(tr("Loading..."));
     WEBVIEW_IMPL *wv = new WEBVIEW_IMPL(dw, url);
     dw->setWidget(wv);
-    dw->setObjectName(QString::number(dm->dockWidgetsMap().size()));
+    dw->setObjectName(QString::number(_dm->dockWidgetsMap().size()));
     dw->setFeature(ads::CDockWidget::DockWidgetDeleteOnClose, true);
-    dm->addDockWidget(area, dw, dm->dockAreaAt(QCursor::pos()));
+    _dm->addDockWidget(_area, dw, _dm->dockAreaAt(QCursor::pos()));
 
     connect(wv, &WEBVIEW_IMPL::titleChanged, [=](const QString &title) {
+        qDebug() << "Title changed to:" << title;
         QString shortTitle(title);
         if (shortTitle.size() > 80) {
             shortTitle.truncate(80);
             shortTitle.append("…");
-        }
+        } else if (shortTitle == "")
+            shortTitle = tr("Untitled");
         dw->setWindowTitle(shortTitle);
+        historyManager()->updateHistoryItem(wv->url(), title);
+    });
+    connect(wv, &WEBVIEW_IMPL::urlChanged, [=](const QUrl &url) {
+        qDebug() << "URL changed to:" << url;
+        if (url.isValid())
+            historyManager()->addHistoryEntry(url.toString());
     });
 }
 
 void MainWindow::addWorkspace()
 {
-    QString workspaceName = QInputDialog::getText(this, "Add new workspace", "Type unique name:");
+    QString workspaceName = QInputDialog::getText(this, tr("Add new workspace"), tr("Type unique name:"));
     if (workspaceName.isEmpty())
         return;
 
-    dm->addPerspective(workspaceName);
+    _dm->addPerspective(workspaceName);
     QAction *a = new QAction(workspaceName);
-    a->setActionGroup(ui->workspaces);
+    a->setActionGroup(_ui->workspaces);
     a->setCheckable(true);
     a->setChecked(true);
-    ui->menuWorkspaces->addAction(a);
-    ui->actionRemoveWorkspace->setVisible(true);
+    _ui->menuWorkspaces->addAction(a);
+    _ui->actionRemoveWorkspace->setVisible(true);
     saveWorkspaces();
 }
 
 void MainWindow::removeWorkspace()
 {
-    if (ui->workspaces->actions().size() <= 1)
+    if (_ui->workspaces->actions().size() <= 1)
         return;
 
-    QAction *a = ui->workspaces->checkedAction();
+    QAction *a = _ui->workspaces->checkedAction();
 
     QMessageBox *confirmBox = new QMessageBox(this);
     confirmBox->setText("Do you want to remove the current workspace " + a->text() + "?");
@@ -163,52 +265,53 @@ void MainWindow::removeWorkspace()
     if(confirmBox->exec() != QMessageBox::Yes)
         return;
 
-    dm->removePerspective(a->text());
-    ui->workspaces->removeAction(a);
-    ui->menuWorkspaces->removeAction(a);
-    ui->menuWorkspaces->actions().first()->setChecked(true);
+    _dm->removePerspective(a->text());
+    _ui->workspaces->removeAction(a);
+    _ui->menuWorkspaces->removeAction(a);
+    _ui->menuWorkspaces->actions().first()->setChecked(true);
     saveWorkspaces();
 }
 
 void MainWindow::saveWorkspaces()
 {
-    QSettings settings("settings.ini", QSettings::IniFormat);
-    dm->savePerspectives(settings);
+    QSettings settings;
+    _dm->savePerspectives(settings);
 }
 
 void MainWindow::restoreWorkspaces()
 {
-    QSettings settings("Settings.ini", QSettings::IniFormat);
-    dm->loadPerspectives(settings);
-    ui->menuWorkspaces->clear();
-    foreach (const QString &name, dm->perspectiveNames()) {
+    QSettings settings;
+    _dm->loadPerspectives(settings);
+    _ui->menuWorkspaces->clear();
+    foreach (const QString &name, _dm->perspectiveNames()) {
         QAction *a = new QAction(name);
         a->setCheckable(true);
-        a->setActionGroup(ui->workspaces);
-        ui->menuWorkspaces->addAction(a);
+        a->setActionGroup(_ui->workspaces);
+        _ui->menuWorkspaces->addAction(a);
     }
-    ui->actionRemoveWorkspace->setVisible(ui->workspaces->actions().size() > 1);
-    if (ui->workspaces->actions().size() > 0)
-        ui->menuWorkspaces->actions().first()->setChecked(true);
+    _ui->actionRemoveWorkspace->setVisible(_ui->workspaces->actions().size() > 1);
+    if (_ui->workspaces->actions().size() > 0)
+        _ui->menuWorkspaces->actions().first()->setChecked(true);
 }
 
 void MainWindow::saveSettings()
 {
-    QSettings settings("settings.ini", QSettings::IniFormat);
-    settings.setValue("browser/area", area);
-    settings.setValue("browser/homePage", homePage);
-    settings.setValue("browser/searchPage", searchPage);
+    QSettings settings;
+    settings.setValue("browser/area", _area);
+    settings.setValue("browser/homePage", _homePage);
+    settings.setValue("browser/searchPage", _searchPage);
     settings.setValue("browser/saveLayout", saveLayoutOnClose);
     settings.setValue("browser/geometry", saveGeometry());
     settings.setValue("browser/state", saveState());
-    settings.setValue("browser/dockingState", dm->saveState());
+    settings.setValue("browser/dockingState", _dm->saveState());
+    settings.setValue("browser/bookmarksBar", _bookmarksToolbar->isVisible());
 
     if (saveLayoutOnClose) {
         settings.beginGroup("tabs");
         settings.remove("");
         settings.endGroup();
         settings.beginWriteArray("tabs");
-        QList<ads::CDockWidget*> tabs = dm->openedDockWidgets();
+        QList<ads::CDockWidget*> tabs = _dm->openedDockWidgets();
         for(int i = 0; i < tabs.size(); i++) {
             settings.setArrayIndex(i);
             settings.setValue("URL", ((WEBVIEW_IMPL*) tabs[i]->widget())->url());
@@ -221,25 +324,26 @@ void MainWindow::saveSettings()
 
 void MainWindow::restoreSettings()
 {
-    QSettings settings("settings.ini", QSettings::IniFormat);
+    QSettings settings;
     restoreGeometry(settings.value("browser/geometry").toByteArray());
     restoreState(settings.value("browser/state").toByteArray());
-    area = (ads::DockWidgetArea) settings.value("browser/area", area).toInt();
-    homePage = settings.value("browser/homePage", homePage).toString();
-    searchPage = settings.value("browser/searchPage", searchPage).toString();
+    _area = (ads::DockWidgetArea) settings.value("browser/area", _area).toInt();
+    _homePage = settings.value("browser/homePage", _homePage).toString();
+    _searchPage = settings.value("browser/searchPage", _searchPage).toString();
     saveLayoutOnClose = settings.value("browser/saveLayout", saveLayoutOnClose).toBool();
+    _bookmarksToolbar->setVisible(settings.value("browser/bookmarksBar", false).toBool());
 
-    ui->actionSave->setChecked(saveLayoutOnClose);
-    if (area == ads::RightDockWidgetArea)
-        ui->actionRight->setChecked(true);
-    else if (area == ads::LeftDockWidgetArea)
-        ui->actionLeft->setChecked(true);
-    else if (area == ads::TopDockWidgetArea)
-        ui->actionTop->setChecked(true);
-    else if (area == ads::BottomDockWidgetArea)
-        ui->actionBottom->setChecked(true);
+    _ui->actionSave->setChecked(saveLayoutOnClose);
+    if (_area == ads::RightDockWidgetArea)
+        _ui->actionRight->setChecked(true);
+    else if (_area == ads::LeftDockWidgetArea)
+        _ui->actionLeft->setChecked(true);
+    else if (_area == ads::TopDockWidgetArea)
+        _ui->actionTop->setChecked(true);
+    else if (_area == ads::BottomDockWidgetArea)
+        _ui->actionBottom->setChecked(true);
     else
-        ui->actionCenter->setChecked(true);
+        _ui->actionCenter->setChecked(true);
 
     if (saveLayoutOnClose) {
         int tabs = settings.beginReadArray("tabs");
@@ -248,7 +352,7 @@ void MainWindow::restoreSettings()
             addPane(settings.value("URL").toUrl());
         }
         settings.endArray();
-        dm->restoreState(settings.value("browser/dockingState").toByteArray());
+        _dm->restoreState(settings.value("browser/dockingState").toByteArray());
     }
 }
 
@@ -280,7 +384,7 @@ void MainWindow::on_actionSave_toggled(bool checked)
 
 void MainWindow::on_actionAdd_triggered()
 {
-    addPane(homePage);
+    addPane(_homePage);
 }
 
 void MainWindow::on_actionAddWorkspace_triggered()
@@ -295,17 +399,17 @@ void MainWindow::on_actionRemoveWorkspace_triggered()
 
 void MainWindow::on_tabAreas_triggered()
 {
-    QString name = ui->tabAreas->checkedAction()->objectName();
+    QString name = _ui->tabAreas->checkedAction()->objectName();
     if (name == "actionRight")
-        area = ads::RightDockWidgetArea;
+        _area = ads::RightDockWidgetArea;
     else if (name == "actionLeft")
-        area = ads::LeftDockWidgetArea;
+        _area = ads::LeftDockWidgetArea;
     else if (name == "actionTop")
-        area = ads::TopDockWidgetArea;
+        _area = ads::TopDockWidgetArea;
     else if (name == "actionBottom")
-        area = ads::BottomDockWidgetArea;
+        _area = ads::BottomDockWidgetArea;
     else
-        area = ads::CenterDockWidgetArea;
+        _area = ads::CenterDockWidgetArea;
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -323,21 +427,21 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_actionHomepage_triggered()
 {
     bool ok;
-    QUrl url = QUrl(QInputDialog::getText(this, "Set home page", "URL:", QLineEdit::Normal, homePage.toString(), &ok));
+    QUrl url = QUrl(QInputDialog::getText(this, tr("Set home page"), tr("URL:"), QLineEdit::Normal, _homePage.toString(), &ok));
     if (ok && url.isValid() && !url.isRelative())
-        homePage = url;
+        _homePage = url;
     else if (ok)
-        QMessageBox::warning(this, "Set home page", "Invalid URL");
+        QMessageBox::warning(this, tr("Set home page"), tr("Invalid URL"));
 }
 
 void MainWindow::on_actionSearchpage_triggered()
 {
     bool ok;
-    QUrl url = QUrl(QInputDialog::getText(this, "Set search page", "URL with [query]:", QLineEdit::Normal, searchPage.toString(), &ok));
+    QUrl url = QUrl(QInputDialog::getText(this, tr("Set search page"), tr("URL with [query]:"), QLineEdit::Normal, _searchPage.toString(), &ok));
     if (ok && url.isValid() && !url.isRelative() && url.toString().contains("[query]"))
-        searchPage = url;
+        _searchPage = url;
     else if (ok)
-        QMessageBox::warning(this, "Set search page", "Invalid URL or does not contain [query]");
+        QMessageBox::warning(this, tr("Set search page"), tr("Invalid URL or does not contain [query]"));
 }
 
 void MainWindow::on_actionClear_toggled(bool checked)
@@ -347,5 +451,46 @@ void MainWindow::on_actionClear_toggled(bool checked)
 
 void MainWindow::on_actionMenubar_toggled(bool checked)
 {
-    ui->menubar->setVisible(checked);
+    _ui->menubar->setVisible(checked);
+}
+
+void MainWindow::on_actionBookmarksbar_toggled(bool checked)
+{
+    qDebug() << "Toggled bookmarksbar" << checked;
+    _ui->actionBookmarksbar->setChecked(checked);
+    _bookmarksToolbar->setVisible(checked);
+    _autoSaver->changeOccurred();
+}
+
+void MainWindow::on_actionFullscreen_toggled(bool checked)
+{
+    if (checked)
+        showFullScreen();
+    else if (isMinimized())
+        showMinimized();
+    else if (isMaximized())
+        showMaximized();
+    else showNormal();
+}
+
+void MainWindow::onShowBookmarksDialog()
+{
+    BookmarksDialog *dialog = new BookmarksDialog(this);
+    connect(dialog, SIGNAL(openUrl(QUrl)),
+            currentWebView(), SLOT(load(QUrl)));
+    dialog->show();
+}
+
+void MainWindow::onAddBookmark()
+{
+    IQWebView *webView = currentWebView();
+    QString url = webView->url().toString();
+    QString title = webView->title();
+    AddBookmarkDialog dialog(url, title);
+    dialog.exec();
+}
+
+void MainWindow::save()
+{
+    // TODO
 }

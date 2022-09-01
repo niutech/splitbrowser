@@ -14,7 +14,7 @@ class QNativeWebView : public QWidget, public IQWebView
 public:
     explicit QNativeWebView(QWidget *parent = nullptr, QUrl url = QUrl());
     ~QNativeWebView();
-    void load(const QUrl &url);
+    void load(const QUrl &url) override;
     void setUrl(const QUrl &url);
     QUrl url() const override;
     QString title() const override;

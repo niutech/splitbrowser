@@ -16,6 +16,7 @@ public:
     ~QWebKitWebView();
     QUrl url() const override;
     QString title() const override;
+    void load(const QUrl &url) override;
 private:
     QProcess *_process;
     QUrl _url;

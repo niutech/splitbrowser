@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.12.4, 2022-07-11T00:07:38. -->
+<!-- Written by QtCreator 4.12.4, 2022-08-29T14:54:30. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -320,7 +320,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">false</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/Jerzy/Workspace/build-splitbrowser-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/native</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/Jerzy/Workspace/build-splitbrowser-Desktop_Qt_5_14_2_MSVC2017_64bit-Release/webkit</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>

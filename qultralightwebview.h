@@ -19,7 +19,7 @@ class QUltralightWebView : public QWidget,
 public:
     explicit QUltralightWebView(QWidget *parent = nullptr, QUrl url = QUrl());
     ~QUltralightWebView();
-    void load(const QUrl &url);
+    void load(const QUrl &url) override;
     void setUrl(const QUrl &url);
     QUrl url() const override;
     QString title() const override;

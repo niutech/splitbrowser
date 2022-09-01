@@ -42,25 +42,25 @@ QNativeWebView::QNativeWebView(QWidget *parent, QUrl url) : QWidget(parent)
     QToolBar *toolbar = new QToolBar;
     toolbar->setIconSize(QSize(24, 24));
 
-    QAction *backAction = new QAction(QIcon(":/icons/back.svg"), "&Back", this);
+    QAction *backAction = new QAction(QIcon(":/icons/back.svg"), tr("&Back"), this);
     backAction->setShortcut(QKeySequence("Alt+Left"));
     backAction->setToolTip("Go back");
     connect(backAction, &QAction::triggered, this, &QNativeWebView::back);
     toolbar->addAction(backAction);
 
-    QAction *forwardAction = new QAction(QIcon(":/icons/forward.svg"), "&Forward", this);
+    QAction *forwardAction = new QAction(QIcon(":/icons/forward.svg"), tr("&Forward"), this);
     forwardAction->setShortcut(QKeySequence("Alt+Right"));
     forwardAction->setToolTip("Go forward");
     connect(forwardAction, &QAction::triggered, this, &QNativeWebView::forward);
     toolbar->addAction(forwardAction);
 
-    QAction *refreshAction = new QAction(QIcon(":/icons/refresh.svg"), "&Refresh", this);
+    QAction *refreshAction = new QAction(QIcon(":/icons/refresh.svg"), tr("&Refresh"), this);
     refreshAction->setShortcuts(QKeySequence::Refresh);
     refreshAction->setToolTip("Refresh");
     connect(refreshAction, &QAction::triggered, this, &QNativeWebView::reload);
     toolbar->addAction(refreshAction);
 
-    QAction *stopAction = new QAction(QIcon(":/icons/close.svg"), "&Stop", this);
+    QAction *stopAction = new QAction(QIcon(":/icons/close.svg"), tr("&Stop"), this);
     stopAction->setShortcuts(QKeySequence::Cancel);
     stopAction->setToolTip("Stop");
     refreshAction->setVisible(false);

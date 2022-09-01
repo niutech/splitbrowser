@@ -4,7 +4,20 @@
 #include <QComboBox>
 #include <QMainWindow>
 #include <QThread>
+
+#if USE_WEBKIT
+#include "qwebkitwebview.h"
+#elif USE_ULTRALIGHT
+#include "qultralightwebview.h"
+#else
+#include "qnativewebview.h"
+#endif
+
 #include "DockManager.h"
+#include "autosaver.h"
+#include "bookmarks.h"
+#include "history.h"
+#include "iqwebview.h"
 
 #if USE_ULTRALIGHT
 #include <AppCore/AppCore.h>
@@ -21,18 +34,25 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     static QUrl sanitizeUrl(const QUrl &url);
+    static HistoryManager *historyManager();
+    static BookmarksManager *bookmarksManager();
     QSize sizeHint() const override;
+    WEBVIEW_IMPL *currentWebView() const;
 protected:
     virtual void closeEvent(QCloseEvent*) override;
 private:
-    Ui::MainWindow *ui;
-    ads::CDockManager *dm;
+    Ui::MainWindow *_ui;
+    ads::CDockManager *_dm;
+    BookmarksToolBar *_bookmarksToolbar;
+    AutoSaver *_autoSaver;
 #if USE_ULTRALIGHT
-    ultralight::RefPtr<ultralight::App> ulApp;
+    ultralight::RefPtr<ultralight::App> _ulApp;
 #endif
-    ads::DockWidgetArea area = ads::RightDockWidgetArea;
-    inline static QUrl homePage = QUrl("https://start.duckduckgo.com/");
-    inline static QUrl searchPage = QUrl("https://duckduckgo.com/?q=[query]");
+    ads::DockWidgetArea _area = ads::RightDockWidgetArea;
+    static HistoryManager *_historyManager;
+    static BookmarksManager *_bookmarksManager;
+    inline static QUrl _homePage = QUrl("https://start.duckduckgo.com/");
+    inline static QUrl _searchPage = QUrl("https://duckduckgo.com/?q=[query]");
     bool saveLayoutOnClose = true;
     bool clearDataOnClose = false;
     void addPane(QUrl url);
@@ -55,5 +75,10 @@ private slots:
     void on_actionSearchpage_triggered();
     void on_actionClear_toggled(bool checked);
     void on_actionMenubar_toggled(bool checked);
+    void on_actionBookmarksbar_toggled(bool checked);
+    void on_actionFullscreen_toggled(bool checked);
+    void onShowBookmarksDialog();
+    void onAddBookmark();
+    void save();
 };
 #endif // MAINWINDOW_H
