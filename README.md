@@ -19,7 +19,12 @@ You can download the latest binary for Windows 10+ in the [releases](https://git
 
 ## Build
 
-This project is being developed on Windows 10 using Qt 5.14, MSVC 2017 and qmake, but it should also run on Linux and macOS, provided that you have downloaded the lastest [Ultralight SDK](https://github.com/ultralight-ux/Ultralight#getting-the-latest-sdk) and [Playwright WebKit binaries](https://github.com/microsoft/playwright) for your platform. Extract them to folders: `../ultralight` and `../webkit` relative to `splitbrowser`, open this project in Qt Creator and run it.
+This project is being developed on Windows 10 using Qt 5.14, MSVC 2017 and qmake, but it also runs on Linux and macOS, provided that you have downloaded the lastest [WebKitGTK](https://webkitgtk.org/), [Ultralight SDK](https://github.com/ultralight-ux/Ultralight#eyes-getting-the-latest-sdk) or [Playwright WebKit binaries](https://github.com/microsoft/playwright) for your platform. Extract them to folders: `../ultralight` and `../webkit` relative to `splitbrowser`, open this project in Qt Creator, set the engine in `splitbrowser.pro` and run it.
+
+Here is Split Browser using WebKitGTK on Linux:
+
+![Split Browser Linux Native](https://github.com/niutech/splitbrowser/assets/384997/81e56f29-a50d-47ab-9ae7-a0a78cdd5626)
+
 
 ## Contribute
 
