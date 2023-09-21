@@ -99,6 +99,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), _ui(new Ui::MainW
 
     BookmarksModel *boomarksModel = bookmarksManager()->bookmarksModel();
     _bookmarksToolbar = new BookmarksToolBar(boomarksModel, this);
+    _bookmarksToolbar->setObjectName("bookmarksbar");
     connect(_bookmarksToolbar, &BookmarksToolBar::openUrl, [=](QUrl url) {
         if (currentWebView()) currentWebView()->load(url);
         else addPane(QUrl(url));
@@ -464,13 +465,21 @@ void MainWindow::on_actionBookmarksbar_toggled(bool checked)
 
 void MainWindow::on_actionFullscreen_toggled(bool checked)
 {
-    if (checked)
+    if (checked) {
         showFullScreen();
-    else if (isMinimized())
-        showMinimized();
-    else if (isMaximized())
-        showMaximized();
-    else showNormal();
+#if USE_NATIVE
+        currentWebView()->findChild<QToolBar*>("wvtoolbar")->hide();
+#endif
+    } else {
+        if (isMinimized())
+            showMinimized();
+        else if (isMaximized())
+            showMaximized();
+        else showNormal();
+#if USE_NATIVE
+        currentWebView()->findChild<QToolBar*>("wvtoolbar")->show();
+#endif
+    }
 }
 
 void MainWindow::onShowBookmarksDialog()

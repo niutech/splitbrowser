@@ -1,6 +1,8 @@
 #include "qwebkitwebview.h"
 
+#ifdef Q_OS_WIN
 #include <windows.h>
+#endif
 #include <QGridLayout>
 #include <QTimer>
 #include <QWindow>
@@ -10,6 +12,10 @@ using namespace std;
 
 QWebKitWebView::QWebKitWebView(QWidget *parent, QUrl url) : QWidget(parent)
 {
+#ifndef Q_OS_WIN
+    QMessageBox::critical(this, QApplication::applicationName(), "WebKit webview is unavailable. Use the native WebViewGTK engine instead.");
+    exit(1);
+#else
     _process = new QProcess(this);
     _process->start("webkit\\Playwright.exe", QStringList(url.toString()));
     _process->waitForStarted();
@@ -20,7 +26,7 @@ QWebKitWebView::QWebKitWebView(QWidget *parent, QUrl url) : QWidget(parent)
     }
     HWND toolbarId = FindWindowEx(winId, NULL, L"ToolbarWindow32", NULL);
     HWND addressBarId = FindWindowEx(toolbarId, NULL, L"Edit", NULL);
-    QWindow *window = QWindow::fromWinId((unsigned long long) winId);
+    QWindow *window = QWindow::fromWinId((WId) winId);
     QWidget *wvWidget = createWindowContainer(window, this, Qt::FramelessWindowHint);
     QGridLayout *layout = new QGridLayout;
     layout->setContentsMargins(0, 0, 0, 0);
@@ -48,6 +54,7 @@ QWebKitWebView::QWebKitWebView(QWidget *parent, QUrl url) : QWidget(parent)
         }
     });
     timer->start(1000);
+#endif
 }
 
 QWebKitWebView::~QWebKitWebView()

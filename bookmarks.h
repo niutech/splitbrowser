@@ -68,7 +68,7 @@ public:
     BookmarkNode *toolbar();
 
     BookmarksModel *bookmarksModel();
-    QUndoStack *undoRedoStack() { return &m_commands; };
+    QUndoStack *undoRedoStack() { return &m_commands; }
 
 public slots:
     void importBookmarks();

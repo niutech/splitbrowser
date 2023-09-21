@@ -1,8 +1,8 @@
 DEVELOPER_NAME='Jerzy Glowacki'
 APP_NAME='Split Browser'
 APP_VERSION=0.2
-WEBKIT_VERSION = 1668
-WEB_ENGINE = webkit # webkit/native/ultralight
+WEBKIT_VERSION = 1728
+WEB_ENGINE = native # webkit/native/ultralight
 
 QT += core gui widgets
 
@@ -61,22 +61,24 @@ FORMS += \
     history.ui \
     mainwindow.ui
 
-CONFIG(debug, debug|release):win32: LIBS += -L$$PWD/./ -lqtadvanceddockingd
-else: LIBS += -L$$PWD/./ -lqtadvanceddocking
+CONFIG(debug, debug|release):win32: LIBS += -L$$PWD/lib/ -lqtadvanceddockingd
+else: LIBS += -L$$PWD/lib/ -lqtadvanceddocking
 
 win32:equals(WEB_ENGINE, 'native'): LIBS += -lWebView2Loader
+unix:equals(WEB_ENGINE, 'native'): LIBS += -lwebkit2gtk-4.0 -lgtk-3 -lgdk-3 -lpangocairo-1.0 -lpango-1.0 -latk-1.0 -lcairo-gobject -lcairo -lgdk_pixbuf-2.0 -lsoup-2.4 -lgio-2.0 -ljavascriptcoregtk-4.0 -lgobject-2.0 -lglib-2.0
 win32:equals(WEB_ENGINE, 'webkit'): LIBS += -luser32
 equals(WEB_ENGINE, 'ultralight'): LIBS += -L$$PWD/ultralight/ -lUltralight -lUltralightCore -lAppCore -lWebCore
 
 INCLUDEPATH += $$PWD/ads
 equals(WEB_ENGINE, 'ultralight'): INCLUDEPATH += $$PWD/ultralight/include
+unix:equals(WEB_ENGINE, 'native'): INCLUDEPATH += /usr/include/webkitgtk-4.0 /usr/include/gtk-3.0 /usr/include/at-spi2-atk/2.0 /usr/include/at-spi-2.0 /usr/include/dbus-1.0 /usr/lib/x86_64-linux-gnu/dbus-1.0/include /usr/include/gtk-3.0 /usr/include/gio-unix-2.0/ /usr/include/cairo /usr/include/pango-1.0 /usr/include/harfbuzz /usr/include/pango-1.0 /usr/include/atk-1.0 /usr/include/cairo /usr/include/pixman-1 /usr/include/freetype2 /usr/include/libpng16 /usr/include/freetype2 /usr/include/libpng16 /usr/include/gdk-pixbuf-2.0 /usr/include/libpng16 /usr/include/libsoup-2.4 /usr/include/libxml2 /usr/include/webkitgtk-4.0 /usr/include/glib-2.0 /usr/lib/x86_64-linux-gnu/glib-2.0/include
 
 DEPENDPATH += $$PWD/ads
 equals(WEB_ENGINE, 'ultralight'): DEPENDPATH += $$PWD/ultralight/include
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
+else: unix: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \

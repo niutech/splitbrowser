@@ -103,7 +103,7 @@ void HistoryManager::setHistory(const QList<HistoryItem> &history, bool loadedAn
 
     // verify that it is sorted by date
     if (!loadedAndSorted)
-        qSort(m_history.begin(), m_history.end());
+        std::sort(m_history.begin(), m_history.end());
 
     checkForExpired();
 
@@ -268,7 +268,7 @@ void HistoryManager::load()
         lastInsertedItem = item;
     }
     if (needToSort)
-        qSort(list.begin(), list.end());
+        std::sort(list.begin(), list.end());
 
     setHistory(list, true);
 
@@ -420,7 +420,7 @@ QVariant HistoryModel::data(const QModelIndex &index, int role) const
             case 1:
                 return item.url;
         }
-        }
+    }
     case Qt::DecorationRole:
         if (index.column() == 0) {
             return QApplication::style()->standardIcon(QStyle::SP_FileIcon);
@@ -1226,7 +1226,7 @@ QModelIndex HistoryTreeModel::mapFromSource(const QModelIndex &sourceIndex) cons
         rowCount(QModelIndex());
 
     QList<int>::iterator it;
-    it = qLowerBound(m_sourceRowCache.begin(), m_sourceRowCache.end(), sourceIndex.row());
+    it = std::lower_bound(m_sourceRowCache.begin(), m_sourceRowCache.end(), sourceIndex.row());
     if (*it != sourceIndex.row())
         --it;
     int dateRow = qMax(0, it - m_sourceRowCache.begin());
@@ -1242,7 +1242,7 @@ void HistoryTreeModel::sourceRowsRemoved(const QModelIndex &parent, int start, i
         return;
     for (int i = end; i >= start;) {
         QList<int>::iterator it;
-        it = qLowerBound(m_sourceRowCache.begin(), m_sourceRowCache.end(), i);
+        it = std::lower_bound(m_sourceRowCache.begin(), m_sourceRowCache.end(), i);
         // playing it safe
         if (it == m_sourceRowCache.end()) {
             beginResetModel();

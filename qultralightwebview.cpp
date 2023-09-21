@@ -19,7 +19,7 @@ QUltralightWebView::QUltralightWebView(QWidget *parent, QUrl url) : QWidget(pare
     _view->set_view_listener(this);
     _window->set_listener(this);
 
-    QWidget *wvWidget = createWindowContainer(QWindow::fromWinId((unsigned long long) _window->native_handle()));
+    QWidget *wvWidget = createWindowContainer(QWindow::fromWinId((WId) _window->native_handle()), this, Qt::FramelessWindowHint);
 
     //Toolbar
     QToolBar *toolbar = new QToolBar;

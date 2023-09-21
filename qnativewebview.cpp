@@ -36,7 +36,7 @@ QNativeWebView::QNativeWebView(QWidget *parent, QUrl url) : QWidget(parent)
         return log;
     });
     WEBVIEW->init("addEventListener('DOMContentLoaded', qtInit)");
-    QWidget *wvWidget = createWindowContainer(QWindow::fromWinId((unsigned long long) WEBVIEW->window()));
+    QWidget *wvWidget = createWindowContainer(QWindow::fromWinId((WId) WEBVIEW->window()), this, Qt::FramelessWindowHint);
 
     //Toolbar
     QToolBar *toolbar = new QToolBar;
@@ -136,7 +136,7 @@ QString QNativeWebView::title() const
 
 bool QNativeWebView::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == _addressBar && event->type() == QEvent::FocusIn)
+    if (obj == _addressBar && event->type() == 8 /* QEvent::FocusIn */)
         QTimer::singleShot(0, _addressBar, &QLineEdit::selectAll);
     return QWidget::eventFilter(obj, event);
 }

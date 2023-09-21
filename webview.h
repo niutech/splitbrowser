@@ -461,8 +461,10 @@ inline std::string json_parse(const std::string &s, const std::string &key,
 //
 // ====================================================================
 //
+#undef signals
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 #include <webkit2/webkit2.h>
 
 namespace webview {
@@ -514,11 +516,12 @@ public:
       webkit_settings_set_enable_developer_extras(settings, true);
     }
 
-    gtk_window_minimize(m_window);
+    gtk_window_iconify(GTK_WINDOW(m_window));
+    // gtk_window_minimize(m_window);
     gtk_widget_show_all(m_window);
   }
   virtual ~gtk_webkit_engine() = default;
-  void *window() { return (void *)m_window; }
+  void *window() { return (void *)gdk_x11_window_get_xid(gtk_widget_get_window(m_window)); }
   int step(int blocking) { return gtk_main_iteration_do(blocking); }
   void run() { gtk_main(); }
   void terminate() { /*gtk_main_quit();*/ }
@@ -579,11 +582,11 @@ public:
   }
 
   char *get_title() {
-      return webkit_web_view_get_title(WEBKIT_WEB_VIEW(m_webview));
+      return (char *)webkit_web_view_get_title(WEBKIT_WEB_VIEW(m_webview));
   }
 
   char *get_url() {
-      return webkit_web_view_get_uri(WEBKIT_WEB_VIEW(m_webview));
+      return (char *)webkit_web_view_get_uri(WEBKIT_WEB_VIEW(m_webview));
   }
 
   void init(const std::string &js) {
@@ -1477,7 +1480,7 @@ WEBVIEW_API void webview_reload(webview_t w) {
   static_cast<webview::webview *>(w)->reload();
 }
 
-WEBVIEW_API void webview_stop(webview_t w, const char *url) {
+WEBVIEW_API void webview_stop(webview_t w) {
   static_cast<webview::webview *>(w)->stop();
 }
 

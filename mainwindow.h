@@ -48,7 +48,7 @@ private:
 #if USE_ULTRALIGHT
     ultralight::RefPtr<ultralight::App> _ulApp;
 #endif
-    ads::DockWidgetArea _area = ads::RightDockWidgetArea;
+    ads::DockWidgetArea _area = ads::CenterDockWidgetArea;
     static HistoryManager *_historyManager;
     static BookmarksManager *_bookmarksManager;
     inline static QUrl _homePage = QUrl("https://start.duckduckgo.com/");
