@@ -32,10 +32,10 @@ Contributions are welcome!
 
 ## License
 
-Split Browser &copy; 2022 Jerzy Głowacki under MIT License.
+Split Browser &copy; 2024 Jerzy Głowacki under MIT License.
 
-Ultralight &copy; 2022 Ultralight Inc. under [Ultralight Free License Agreement](https://github.com/ultralight-ux/Ultralight/blob/master/license/LICENSE.txt).
+Ultralight &copy; 2024 Ultralight Inc. under [Ultralight Free License Agreement](https://github.com/ultralight-ux/Ultralight/blob/master/license/LICENSE.txt).
 
-Playwright &copy; 2022 Microsoft Corp. under Apache 2.0 License.
+Playwright &copy; 2024 Microsoft Corp. under Apache 2.0 License.
 
-Webview &copy; 2022 Serge Zaitsev et. al. under MIT license.
+Webview &copy; 2024 Serge Zaitsev et. al. under MIT license.
