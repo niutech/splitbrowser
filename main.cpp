@@ -10,5 +10,7 @@ int main(int argc, char *argv[])
     a.setApplicationVersion(QString::number(APP_VERSION));
     MainWindow w;
     w.show();
-    return a.exec();
+    int res = a.exec();
+    MainWindow::cleanup();
+    return res;
 }

@@ -38,6 +38,7 @@ public:
     static BookmarksManager *bookmarksManager();
     QSize sizeHint() const override;
     WEBVIEW_IMPL *currentWebView() const;
+    static void cleanup();
 protected:
     virtual void closeEvent(QCloseEvent*) override;
 private:

@@ -155,18 +155,9 @@ QUrl MainWindow::sanitizeUrl(const QUrl &url)
     if (!url.isValid())
         return QUrl("about:blank");
     if (url.isRelative()) {
-        if (url.toString().endsWith(".com") ||
-            url.toString().endsWith(".net") ||
-            url.toString().endsWith(".org") ||
-            url.toString().endsWith(".info") ||
-            url.toString().endsWith(".co") ||
-            url.toString().endsWith(".uk") ||
-            url.toString().endsWith(".de") ||
-            url.toString().endsWith(".fr") ||
-            url.toString().endsWith(".pl") ||
-            url.toString().endsWith(".io")) {
-            return QUrl("http://" + url.toEncoded());
-        }
+        QString s = url.toString();
+        if (s.contains('.') && !s.contains(' '))
+            return QUrl::fromUserInput(s);
         return QUrl(_searchPage.toString().replace("[query]", url.toEncoded()));
     }
     return url;
@@ -198,6 +189,14 @@ WEBVIEW_IMPL *MainWindow::currentWebView() const
     if (_dm->dockArea(0) && _dm->dockArea(0)->currentDockWidget())
         return (WEBVIEW_IMPL*) _dm->dockArea(0)->currentDockWidget()->widget();
     return nullptr;
+}
+
+void MainWindow::cleanup()
+{
+    delete _historyManager;
+    _historyManager = nullptr;
+    delete _bookmarksManager;
+    _bookmarksManager = nullptr;
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -260,7 +259,7 @@ void MainWindow::removeWorkspace()
     QAction *a = _ui->workspaces->checkedAction();
 
     QMessageBox *confirmBox = new QMessageBox(this);
-    confirmBox->setText("Do you want to remove the current workspace " + a->text() + "?");
+    confirmBox->setText(tr("Do you want to remove the current workspace %1?").arg(a->text()));
     confirmBox->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     confirmBox->setDefaultButton(QMessageBox::No);
     if(confirmBox->exec() != QMessageBox::Yes)
@@ -369,7 +368,6 @@ bool MainWindow::clearData()
     QString path(QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.cache/" + QFileInfo(QApplication::applicationFilePath()).fileName() + "/WebKitCache");
 #endif
     qDebug() << "Removing" << path;
-    QThread::msleep(500);
     return QDir(path).removeRecursively();
 }
 
@@ -415,7 +413,7 @@ void MainWindow::on_tabAreas_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QMessageBox::about(this, "About " + QApplication::applicationName(),
+    QMessageBox::about(this, tr("About %1").arg(QApplication::applicationName()),
                        QApplication::applicationName() + " version " + QApplication::applicationVersion() +
 #if USE_WEBKIT
                        "\nPlaywright WebKit revision " + QString::number(WEBKIT_VERSION) +
@@ -468,7 +466,8 @@ void MainWindow::on_actionFullscreen_toggled(bool checked)
     if (checked) {
         showFullScreen();
 #if USE_NATIVE
-        currentWebView()->findChild<QToolBar*>("wvtoolbar")->hide();
+        if (currentWebView())
+            currentWebView()->findChild<QToolBar*>("wvtoolbar")->hide();
 #endif
     } else {
         if (isMinimized())
@@ -477,13 +476,16 @@ void MainWindow::on_actionFullscreen_toggled(bool checked)
             showMaximized();
         else showNormal();
 #if USE_NATIVE
-        currentWebView()->findChild<QToolBar*>("wvtoolbar")->show();
+        if (currentWebView())
+            currentWebView()->findChild<QToolBar*>("wvtoolbar")->show();
 #endif
     }
 }
 
 void MainWindow::onShowBookmarksDialog()
 {
+    if (!currentWebView())
+        return;
     BookmarksDialog *dialog = new BookmarksDialog(this);
     connect(dialog, SIGNAL(openUrl(QUrl)),
             currentWebView(), SLOT(load(QUrl)));
@@ -493,6 +495,8 @@ void MainWindow::onShowBookmarksDialog()
 void MainWindow::onAddBookmark()
 {
     IQWebView *webView = currentWebView();
+    if (!webView)
+        return;
     QString url = webView->url().toString();
     QString title = webView->title();
     AddBookmarkDialog dialog(url, title);
