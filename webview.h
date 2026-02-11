@@ -170,6 +170,7 @@ WEBVIEW_API void webview_return(webview_t w, const char *seq, int status,
 #include <functional>
 #include <future>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -1166,19 +1167,23 @@ public:
   char *get_title() {
     LPWSTR wtitle;
     m_webview->get_DocumentTitle(&wtitle);
+    if (!wtitle) return (char*)"";
     int length = WideCharToMultiByte(CP_UTF8, 0, wtitle, -1, 0, 0, NULL, NULL);
-    char *title = new char[length];
-    WideCharToMultiByte(CP_UTF8, 0, wtitle, -1, title, length, NULL, NULL);
-    return title;
+    m_title.resize(length);
+    WideCharToMultiByte(CP_UTF8, 0, wtitle, -1, &m_title[0], length, NULL, NULL);
+    CoTaskMemFree(wtitle);
+    return (char *)m_title.c_str();
   }
 
   char *get_url() {
     LPWSTR wurl;
     m_webview->get_Source(&wurl);
+    if (!wurl) return (char*)"";
     int length = WideCharToMultiByte(CP_UTF8, 0, wurl, -1, 0, 0, NULL, NULL);
-    char *url = new char[length];
-    WideCharToMultiByte(CP_UTF8, 0, wurl, -1, url, length, NULL, NULL);
-    return url;
+    m_url.resize(length);
+    WideCharToMultiByte(CP_UTF8, 0, wurl, -1, &m_url[0], length, NULL, NULL);
+    CoTaskMemFree(wurl);
+    return (char *)m_url.c_str();
   }
 
   void init(const std::string &js) {
@@ -1245,6 +1250,8 @@ private:
 
   virtual void on_message(const std::string &msg) = 0;
 
+  std::string m_title;
+  std::string m_url;
   HWND m_window;
   POINT m_minsz = POINT{0, 0};
   POINT m_maxsz = POINT{0, 0};
@@ -1330,6 +1337,16 @@ public:
   webview(bool debug = false, void *wnd = nullptr)
       : browser_engine(debug, wnd) {}
 
+  virtual ~webview() {
+    for (auto const& [name, ctx] : bindings) {
+      delete ctx->first;
+      if (m_sync_bindings.count(ctx->second)) {
+        delete static_cast<sync_binding_ctx_t *>(ctx->second);
+      }
+      delete ctx;
+    }
+  }
+
   void navigate(const std::string &url) {
     if (url == "") {
       browser_engine::navigate("about:blank");
@@ -1345,13 +1362,15 @@ public:
   using sync_binding_ctx_t = std::pair<webview *, sync_binding_t>;
 
   void bind(const std::string &name, sync_binding_t fn) {
+    auto sync_ctx = new sync_binding_ctx_t(this, fn);
+    m_sync_bindings.insert(sync_ctx);
     bind(
         name,
         [](const std::string &seq, const std::string &req, void *arg) {
           auto pair = static_cast<sync_binding_ctx_t *>(arg);
           pair->first->resolve(seq, 0, pair->second(req));
         },
-        new sync_binding_ctx_t(this, fn));
+        sync_ctx);
   }
 
   void bind(const std::string &name, binding_t f, void *arg) {
@@ -1375,6 +1394,7 @@ public:
     })())";
     init(js);
     eval(js);
+    unbind(name);
     bindings[name] = new binding_ctx_t(new binding_t(f), arg);
   }
 
@@ -1383,9 +1403,13 @@ public:
       auto js = "delete window['" + name + "'];";
       init(js);
       eval(js);
-      delete bindings[name]->first;
-      delete static_cast<sync_binding_ctx_t *>(bindings[name]->second);
-      delete bindings[name];
+      auto ctx = bindings[name];
+      delete ctx->first;
+      if (m_sync_bindings.count(ctx->second)) {
+        delete static_cast<sync_binding_ctx_t *>(ctx->second);
+        m_sync_bindings.erase(ctx->second);
+      }
+      delete ctx;
       bindings.erase(name);
     }
   }
@@ -1414,6 +1438,7 @@ private:
     (*fn->first)(seq, args, fn->second);
   }
   std::map<std::string, binding_ctx_t *> bindings;
+  std::set<void *> m_sync_bindings;
 };
 } // namespace webview
 

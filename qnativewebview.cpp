@@ -18,9 +18,9 @@ QNativeWebView::QNativeWebView(QWidget *parent, QUrl url) : QWidget(parent)
 {
     _wv = new webview::webview(false, nullptr);
     if (!WEBVIEW->window()) {
-        QMessageBox::critical(this, QApplication::applicationName(), "Cannot initialize native webview!"
+        QMessageBox::critical(this, QApplication::applicationName(), tr("Cannot initialize native webview!")
 #ifdef _WIN32
-           "\nInstall Edge WebView2 from https://developer.microsoft.com/en-us/microsoft-edge/webview2/consumer/"
+           + "\n" + tr("Install Edge WebView2 from https://developer.microsoft.com/en-us/microsoft-edge/webview2/consumer/")
 #endif
         );
         exit(1);
@@ -44,25 +44,25 @@ QNativeWebView::QNativeWebView(QWidget *parent, QUrl url) : QWidget(parent)
 
     QAction *backAction = new QAction(QIcon(":/icons/back.svg"), tr("&Back"), this);
     backAction->setShortcut(QKeySequence("Alt+Left"));
-    backAction->setToolTip("Go back");
+    backAction->setToolTip(tr("Go back"));
     connect(backAction, &QAction::triggered, this, &QNativeWebView::back);
     toolbar->addAction(backAction);
 
     QAction *forwardAction = new QAction(QIcon(":/icons/forward.svg"), tr("&Forward"), this);
     forwardAction->setShortcut(QKeySequence("Alt+Right"));
-    forwardAction->setToolTip("Go forward");
+    forwardAction->setToolTip(tr("Go forward"));
     connect(forwardAction, &QAction::triggered, this, &QNativeWebView::forward);
     toolbar->addAction(forwardAction);
 
     QAction *refreshAction = new QAction(QIcon(":/icons/refresh.svg"), tr("&Refresh"), this);
     refreshAction->setShortcuts(QKeySequence::Refresh);
-    refreshAction->setToolTip("Refresh");
+    refreshAction->setToolTip(tr("Refresh"));
     connect(refreshAction, &QAction::triggered, this, &QNativeWebView::reload);
     toolbar->addAction(refreshAction);
 
     QAction *stopAction = new QAction(QIcon(":/icons/close.svg"), tr("&Stop"), this);
     stopAction->setShortcuts(QKeySequence::Cancel);
-    stopAction->setToolTip("Stop");
+    stopAction->setToolTip(tr("Stop"));
     refreshAction->setVisible(false);
     connect(stopAction, &QAction::triggered, this, &QNativeWebView::stop);
     toolbar->addAction(stopAction);
@@ -136,7 +136,7 @@ QString QNativeWebView::title() const
 
 bool QNativeWebView::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == _addressBar && event->type() == 8 /* QEvent::FocusIn */)
+    if (obj == _addressBar && event->type() == QEvent::FocusIn)
         QTimer::singleShot(0, _addressBar, &QLineEdit::selectAll);
     return QWidget::eventFilter(obj, event);
 }
